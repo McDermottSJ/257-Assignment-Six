@@ -10,11 +10,14 @@
 int setup(int *server, struct sockaddr_in *saddr);
 
 int main(int argc, char *argv[]){
-	int server, client, returnCode = 0;
+	int server, client, returnCode = 0, fileEnd = 0;
 	uint32_t value, inet_len;
 	struct sockaddr_in saddr, caddr;
 	char inString[9];
-	char file[50] = "./";
+	char filePath[50] = "./";
+	FILE *file;
+	char fileBuffer[50];
+	char endOfPackets[50] = {'c','m','s','c','2','5','7',[7 ... 49] = '\0' };
 
 	if(setup(&server, &saddr)){
 		exit(-1);//print statement is already handled
@@ -40,8 +43,8 @@ int main(int argc, char *argv[]){
 			printf("recieved packet [%s]\n", inString);//TODO remove
 			
 			//Check current directory for files
-			strcat(file, inString);
-			if(fopen(file, "r") == NULL){
+			strcat(filePath, inString);
+			if((file = fopen(filePath, "r")) == NULL){
 				returnCode =0;
 			}
 			else{
@@ -58,12 +61,48 @@ int main(int argc, char *argv[]){
 		}
 
 		printf("located file [%s] successfully", inString);
+		
+		//begin sending file
+		int i = 0;
+		char c;
+		
+		while(!fileEnd){
+			//grab 50 bytes from file, pad packet if needed.
+			for(i = 0; i < 50; i++){
+				c = fgetc(file);
+				if(feof(file)){
+					fileBuffer[i] = '\0';
+					fileEnd = 1;
+				}
+				else{
+					fileBuffer[i] = c;
+				}
+			}
+			//send packet
+			if(write(client, &fileBuffer, sizeof(fileBuffer)) != sizeof(fileBuffer)){
+				printf("Error writing network data [%s]\n", strerror(errno));
+				close(server);
+				return(-1);	
+			}
+			//wait for response
+			if(read(client, &returnCode, sizeof(returnCode)) != sizeof(returnCode)){
+				printf("Error reading network data [%s]\n", strerror(errno));
+				close(server);
+				return(-1);	
+			}
+		}
+		//send end of packets signal
+		if(write(client, &endOfPackets, sizeof(endOfPackets)) != sizeof(endOfPackets)){
+			printf("Error writing network data [%s]\n", strerror(errno));
+			close(server);
+			return(-1);	
+		}
+		
 
 	}
-
+	//TODO RESUMER HERE-- add threading, remember visual mode and > to indent
 	return 0;
 }
-
 
 
 int setup(int *server, struct sockaddr_in *saddr){
