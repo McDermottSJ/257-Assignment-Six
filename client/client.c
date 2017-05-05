@@ -14,36 +14,29 @@ int main(int argc, char *argv[]){
 	uint32_t value;
 	struct sockaddr_in caddr;
 	char *ip = "127.0.0.1";
-	char buffedName[9] = "test.txt";
+	//char buffedName[9] = "test.txt";
+	char buffedName[50] = {[0 ... 49] = '\0'};
 	char fileBuffer[50];
 	FILE *file;
 	int returnCode = 1;
 	char endOfPackets[50] = {'c','m','s','c','2','5','7',[7 ... 49] = '\0' };
 	//TODO RESUME HERE-- fix the input to take any file name
 
-	/*
-	if(argc > 1){
-		scanf("%s", &file);
+	
+	if(argc == 1){
+		scanf("%s", &buffedName); 
 	}
 	else{
-		file = argv[1];
+		strcpy(buffedName, argv[2]);
 	}
-	for(i = 0; i < 50; i++){
-		if(i < strlen(file)){
-			buffedFile[i] = file[i];
-		}
-		else{
-			buffedFile[i] = '\0';
-		}
-	}
-
-	printf("%s", buffedFile);
-	*/
+	
+	printf("%s", buffedName);
+	
 
 
 	//Setup
 	caddr.sin_family = AF_INET;
-	caddr.sin_port = htons(2555);
+	caddr.sin_port = htons(2666);
 	if(inet_aton(ip, &caddr.sin_addr) == 0){
 		return ( -1 );
 	}
