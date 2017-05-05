@@ -27,7 +27,7 @@ int main(int argc, char *argv[]){
 		scanf("%s", &buffedName); 
 	}
 	else{
-		strcpy(buffedName, argv[2]);
+		strcpy(buffedName, argv[1]);
 	}
 	
 	printf("%s", buffedName);
